@@ -34,6 +34,9 @@
   .editor .marca { display: flex; align-items: center; gap: 8px; }
   .editor img { width: 22px; height: 22px; opacity: .85; }
   .editor b { color: var(--tinta); font-weight: 600; letter-spacing: .04em; }
+  .editor a.marca { color: var(--gris); }
+  .editor a.marca:hover { text-decoration: none; color: var(--tinta); }
+  .editor .accesos a + a { margin-left: 14px; padding-left: 14px; border-left: 1px solid var(--linea); }
 
   .cabecera { padding: 32px 0 20px; }
   .cabecera .ancho { display: flex; align-items: center; gap: 22px; }
@@ -135,7 +138,8 @@
     .numero .tapa { width: 100px; padding: 10px 8px; }
     .numero .tapa b { font-size: 12px; }
     nav .ancho { gap: 18px; flex-wrap: nowrap; overflow-x: auto; white-space: nowrap; }
-    .editor .ancho > a { display: none; }
+    .editor .accesos a:first-child { display: none; }
+    .editor .accesos a + a { margin-left: 0; padding-left: 0; border-left: 0; }
     footer .ancho { grid-template-columns: 1fr; gap: 16px; }
     .articulo h1 { font-size: 24px; }
   }
@@ -144,8 +148,8 @@
 <body>
 
 <div class="editor"><div class="ancho">
-  <span class="marca"><img src="img/ideax.png" alt=""><span>Revista editada por <b>IDEAX CHILE</b>, Instituto de Administración y Dirección Ejecutiva</span></span>
-  <a href="https://www.ideax.cl">www.ideax.cl</a>
+  <a class="marca" href="https://www.ideax.cl"><img src="img/ideax.png" alt=""><span>Revista editada por <b>IDEAX CHILE</b>, Instituto de Administración y Dirección Ejecutiva</span></a>
+  <span class="accesos"><a href="https://www.ideax.cl">Ir a IDEAX</a><a href="admin.html">Panel editorial</a></span>
 </div></div>
 
 <header class="cabecera"><div class="ancho">
@@ -167,7 +171,7 @@
 
 <footer><div class="ancho">
   <div><b>Cuaderno Multidisciplinar de Investigación Aplicada</b>Revista científica de acceso abierto, arbitrada por pares externos.
-    <div class="ideax"><img src="img/ideax.png" alt="IDEAX Chile"><span>Editada por IDEAX Chile, Instituto de Administración y Dirección Ejecutiva. Santiago, Chile.</span></div></div>
+    <div class="ideax"><img src="img/ideax.png" alt="IDEAX Chile"><span>Editada por <a href="https://www.ideax.cl">IDEAX Chile</a>, Instituto de Administración y Dirección Ejecutiva. Santiago, Chile.</span></div></div>
   <div><b>Contacto</b><span id="pieCorreo">cmia@ideax.cl</span><br><span id="pieIssn"></span><br><a href="archivo.html">Índice de artículos</a></div>
   <div><b>Licencia</b>Los artículos se publican bajo licencia <a href="https://creativecommons.org/licenses/by/4.0/deed.es" rel="license">Creative Commons Atribución 4.0 Internacional</a>.</div>
 </div></footer>
