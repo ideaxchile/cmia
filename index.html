@@ -336,8 +336,8 @@ function formularioEnvio(r) {
       '<label>Institución<input type="text" name="institucion" required autocomplete="organization"></label>' +
       '<label>País<input type="text" name="pais" required autocomplete="country-name"></label></div>' +
       '<label>ORCID <small>Opcional. Formato 0000-0000-0000-0000.</small><input type="text" name="orcid" inputmode="numeric" placeholder="0000-0000-0000-0000"></label>' +
-      '<label>Coautores <small>Nombre, institución y país de cada coautor, uno por línea.</small><textarea name="coautores" style="min-height:80px"></textarea></label></fieldset>' +
-    '<fieldset><legend>Manuscrito</legend>' +
+      '</fieldset><fieldset><legend>Coautores</legend><p class="tenue" style="margin:0 0 12px">Agrega a cada coautor con su correo: todos los autores reciben las comunicaciones de la revista y, si el trabajo se publica, su certificado de publicación.</p>' +
+      '<div id="coLista"></div><button type="button" class="boton" id="coAgregar" style="background:#fff;color:var(--azul);margin-bottom:6px">Agregar coautor</button></fieldset><fieldset><legend>Manuscrito</legend>' +
       '<label>Título<input type="text" name="titulo" required></label><div class="dos">' +
       '<label>Área temática<select name="area" required><option value="">Elige un área</option>' + areas + '</select></label>' +
       '<label>Tipo de trabajo<select name="tipo" required>' + tipos + '</select></label></div>' +
@@ -362,18 +362,34 @@ function leerArchivo(f, max) {
     r.readAsDataURL(f);
   });
 }
+function filaCoautor() {
+  var d = document.createElement('div'); d.className = 'co dos'; d.style.cssText = 'border-left:3px solid var(--linea);padding-left:12px;margin-bottom:10px';
+  d.innerHTML = '<label>Nombre completo<input type="text" data-co="nombre"></label><label>Correo electrónico<input type="email" data-co="correo"></label>' +
+    '<label>Institución<input type="text" data-co="institucion"></label><label>País<input type="text" data-co="pais"></label>' +
+    '<label>ORCID <small>Opcional.</small><input type="text" data-co="orcid" placeholder="0000-0000-0000-0000"></label><div style="align-self:end;margin-bottom:14px"><button type="button" class="boton" style="background:#fff;color:#9b1c1c;border-color:#9b1c1c">Quitar</button></div>';
+  d.querySelector('button').onclick = function () { d.remove(); };
+  $('#coLista').appendChild(d);
+}
+function coautores() {
+  return Array.prototype.map.call(document.querySelectorAll('#coLista .co'), function (d) { var o = {}; Array.prototype.forEach.call(d.querySelectorAll('[data-co]'), function (i) { o[i.getAttribute('data-co')] = i.value.trim(); }); return o; })
+    .filter(function (o) { return o.nombre || o.correo || o.institucion; });
+}
 function prepararEnvio() {
   var f = $('#fEnvio'), est = $('#eEnvio'), b = $('#bEnviar');
+  $('#coAgregar').onclick = filaCoautor;
   f.onsubmit = function (e) {
     e.preventDefault(); est.className = 'estado-envio';
     var falta = Array.prototype.filter.call(f.querySelectorAll('[required]'), function (x) { return x.type === 'checkbox' ? !x.checked : !String(x.value || '').trim(); })[0];
     if (falta) { est.className += ' error'; est.textContent = falta.type === 'checkbox' ? 'Debes aceptar las tres declaraciones.' : 'Falta completar: ' + (falta.closest('label').firstChild.textContent || 'un campo') + '.'; falta.focus(); return; }
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.correo.value.trim())) { est.className += ' error'; est.textContent = 'Revisa el correo electrónico.'; f.correo.focus(); return; }
     if (f.orcid.value.trim() && !/^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$/.test(f.orcid.value.trim())) { est.className += ' error'; est.textContent = 'El ORCID debe tener el formato 0000-0000-0000-0000.'; f.orcid.focus(); return; }
+    var malCo = coautores().filter(function (c) { return !c.nombre || !c.institucion || !c.pais || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(c.correo) || (c.orcid && !/^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$/.test(c.orcid)); })[0];
+    if (malCo) { est.className += ' error'; est.textContent = 'Completa nombre, correo, institución y país de ' + (malCo.nombre || 'cada coautor') + ' (el ORCID es opcional).'; return; }
     b.disabled = true; est.textContent = 'Subiendo los archivos, no cierres esta página…';
     Promise.all([leerArchivo(f.manuscrito.files[0], 10), leerArchivo(f.carta.files[0], 5)]).then(function (arch) {
       var d = { accion: 'envio', web: f.web.value, manuscrito: arch[0], carta: arch[1] };
-      ['nombre', 'correo', 'institucion', 'pais', 'orcid', 'coautores', 'titulo', 'area', 'tipo', 'resumen', 'comentarios'].forEach(function (k) { d[k] = f[k].value.trim(); });
+      ['nombre', 'correo', 'institucion', 'pais', 'orcid', 'titulo', 'area', 'tipo', 'resumen', 'comentarios'].forEach(function (k) { d[k] = f[k].value.trim(); });
+      d.coautores = coautores();
       return fetch(CMIA_API, { method: 'POST', body: JSON.stringify(d) }).then(function (x) { return x.json(); });
     }).then(function (r) {
       if (!r.ok) throw new Error(r.error || 'No se pudo enviar.');
