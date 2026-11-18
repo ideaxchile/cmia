@@ -193,7 +193,7 @@
 <footer><div class="ancho">
   <div><b>Cuaderno Multidisciplinar de Investigación Aplicada</b>Revista científica de acceso abierto, arbitrada por pares externos.
     <div class="ideax"><img src="img/ideax.png" alt="IDEAX Chile"><span>Editada por <a href="https://www.ideax.cl">IDEAX Chile</a>, Instituto de Administración y Dirección Ejecutiva. Santiago, Chile.</span></div></div>
-  <div><b>Contacto</b><span id="pieCorreo">cmia@ideax.cl</span><br><span id="pieIssn"></span><br><a href="archivo.html">Índice de artículos</a></div>
+  <div><b>Contacto</b><a href="#contacto">Formulario de contacto</a><br><a href="#enviar">Enviar un manuscrito</a><br><a href="archivo.html">Índice de artículos</a><br><span id="pieIssn"></span></div>
   <div><b>Licencia</b>Los artículos se publican bajo licencia <a href="https://creativecommons.org/licenses/by/4.0/deed.es" rel="license">Creative Commons Atribución 4.0 Internacional</a>.</div>
 </div></footer>
 
@@ -274,7 +274,7 @@ function pagina(ruta) {
   if (!ruta) {
     var n = R.numeros[0];
     cont = n ? bloqueNumero(n, 'Número actual') : '<p class="rotulo">Próximamente</p><h2>El primer número está en preparación</h2><p>' + esc(r.descripcion) + '</p>' +
-      '<p>Si quieres publicar en la revista, revisa las ' + enlace('p/instrucciones', 'instrucciones para autores') + ' y escríbenos a <a href="mailto:' + esc(r.correo) + '">' + esc(r.correo) + '</a>.</p>';
+      '<p>Si quieres publicar en la revista, revisa las ' + enlace('p/instrucciones', 'instrucciones para autores') + ' y envía tu trabajo desde ' + enlace('enviar', 'el formulario de envío') + '. Para otras consultas, usa el ' + enlace('contacto', 'formulario de contacto') + '.</p>';
   } else if (ruta === 'archivo') {
     titulo = 'Archivo';
     cont = '<p class="rotulo">Archivo</p><h2>Todos los números</h2>' + (R.numeros.length ? '<div class="archivo">' + R.numeros.map(function (n) {
@@ -303,9 +303,17 @@ function pagina(ruta) {
   } else if (ruta === 'contacto') {
     titulo = 'Contacto';
     var dir = R.equipo.filter(function (e) { return /director/i.test(e.rol); })[0];
-    cont = '<p class="rotulo">La revista</p><h2>Contacto</h2><div class="equipo"><div><b>Correo de la revista</b><span><a href="mailto:' + esc(r.correo) + '">' + esc(r.correo) + '</a></span></div>' +
+    cont = '<p class="rotulo">La revista</p><h2>Contacto</h2><p class="tenue">Escríbenos por este formulario: el equipo editorial te responderá por correo. Si tu consulta es sobre un manuscrito enviado, indica su código.</p>' +
+      '<form class="form" id="fContacto" novalidate><div class="dos"><label>Nombre<input type="text" name="nombre" required autocomplete="name"></label><label>Correo electrónico<input type="email" name="correo" required autocomplete="email"></label>' +
+      '<label>Institución <small>Opcional.</small><input type="text" name="institucion" autocomplete="organization"></label><label>Asunto<select name="asunto">' +
+      ['Consulta general', 'Envío de manuscritos', 'Evaluación y arbitraje', 'Artículo publicado', 'Certificados', 'Otro'].map(function (x) { return '<option>' + x + '</option>'; }).join('') + '</select></label></div>' +
+      '<label>Código del envío o folio del certificado <small>Opcional.</small><input type="text" name="codigo" placeholder="CMIA-2026-001"></label>' +
+      '<label>Mensaje<textarea name="mensaje" required style="min-height:150px"></textarea></label><input class="trampa" type="text" name="web" tabindex="-1" autocomplete="off" aria-hidden="true">' +
+      '<button class="boton" type="submit" id="bContacto">Enviar mensaje</button><div class="estado-envio" id="eContacto" role="status"></div></form>' +
+      '<h3 class="seccion" style="margin-top:34px">Datos de la revista</h3><div class="equipo">' +
       '<div><b>Entidad editora</b><span>' + esc(r.entidad) + ', Instituto de Administración y Dirección Ejecutiva</span></div>' + (r.direccion ? '<div><b>Dirección</b><span>' + esc(r.direccion) + '</span></div>' : '') +
       '<div><b>Ciudad</b><span>' + esc(r.ciudad) + '</span></div>' + (dir ? '<div><b>' + esc(dir.rol) + '</b><span>' + esc(dir.nombre) + '</span></div>' : '') + '</div>';
+    pintar(cont, 'contacto', titulo); prepararContacto(); return;
   } else if (ruta.indexOf('p/') === 0) {
     var pg = R.paginas.filter(function (x) { return x.clave === ruta.slice(2); })[0];
     act = ruta === 'p/instrucciones' || ruta === 'p/enfoque' ? ruta : 'politicas';
@@ -361,6 +369,20 @@ function leerArchivo(f, max) {
     r.onerror = function () { mal(new Error('No se pudo leer el archivo «' + f.name + '».')); };
     r.readAsDataURL(f);
   });
+}
+function prepararContacto() {
+  var f = $('#fContacto'), est = $('#eContacto'), b = $('#bContacto');
+  f.onsubmit = function (e) {
+    e.preventDefault(); est.className = 'estado-envio';
+    if (!f.nombre.value.trim() || !f.mensaje.value.trim()) { est.className += ' error'; est.textContent = 'Completa tu nombre y el mensaje.'; return; }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.correo.value.trim())) { est.className += ' error'; est.textContent = 'Revisa tu correo electrónico.'; f.correo.focus(); return; }
+    b.disabled = true; est.textContent = 'Enviando…';
+    var d = { accion: 'contacto' }; ['nombre', 'correo', 'institucion', 'asunto', 'codigo', 'mensaje', 'web'].forEach(function (k) { d[k] = f[k].value.trim(); });
+    fetch(CMIA_API, { method: 'POST', body: JSON.stringify(d) }).then(function (x) { return x.json(); }).then(function (r) {
+      if (!r.ok) throw new Error(r.error || 'No se pudo enviar.');
+      f.outerHTML = '<div class="recibo"><b>Mensaje enviado.</b><p>Gracias, ' + esc(d.nombre) + '. Te enviamos una copia a <b>' + esc(d.correo) + '</b> y te responderemos a ese correo.</p></div>';
+    }).catch(function (err) { b.disabled = false; est.className = 'estado-envio error'; est.textContent = err.message === 'Failed to fetch' ? 'No hay conexión con la revista. Intenta de nuevo.' : err.message; });
+  };
 }
 function filaCoautor() {
   var d = document.createElement('div'); d.className = 'co dos'; d.style.cssText = 'border-left:3px solid var(--linea);padding-left:12px;margin-bottom:10px';
@@ -462,7 +484,6 @@ function aplicar(d) {
   R = d;
   var r = d.revista;
   $('#datos').innerHTML = '<span>CMIA</span><span>' + (r.issn ? 'ISSN ' + esc(r.issn) + ' (en línea)' : 'ISSN en trámite') + '</span><span>' + esc(String(r.periodicidad || 'Anual').split(':')[0]) + '</span><span>Acceso abierto</span>';
-  $('#pieCorreo').innerHTML = '<a href="mailto:' + esc(r.correo) + '">' + esc(r.correo) + '</a>';
   $('#pieIssn').textContent = r.issn ? 'ISSN ' + r.issn + ' (en línea)' : '';
   mostrar();
 }
