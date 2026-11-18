@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Seguimiento del manuscrito · CMIA</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root { --tinta: #1d1d1b; --gris: #5f6368; --linea: #d6d3cc; --suave: #f4f2ed; --azul: #1f3b63; --burdeo: #7a1f35; --serif: "IBM Plex Serif", Georgia, serif; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #fff; color: var(--tinta); font: 16px/1.6 "IBM Plex Sans", Arial, sans-serif; }
+  a { color: var(--azul); }
+  .ancho { max-width: 820px; margin: 0 auto; padding: 0 24px; }
+  header { border-bottom: 2px solid var(--tinta); padding: 22px 0 16px; }
+  header .ancho { display: flex; align-items: center; gap: 14px; }
+  header b { display: block; font: 500 19px/1.25 var(--serif); }
+  header small { color: var(--gris); font-size: 13px; }
+  main { padding: 30px 0 70px; }
+  .rotulo { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--burdeo); font-weight: 600; margin: 0 0 6px; }
+  h1 { font: 500 26px/1.3 var(--serif); margin: 0 0 8px; }
+  h2 { font: 600 12.5px "IBM Plex Sans", sans-serif; letter-spacing: .14em; text-transform: uppercase; margin: 30px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--linea); }
+  .tenue { color: var(--gris); font-size: 14.5px; }
+  .resumen { font-family: var(--serif); font-size: 16.5px; line-height: 1.7; white-space: pre-wrap; }
+  .datos { display: flex; flex-wrap: wrap; gap: 4px 20px; font-size: 14px; color: var(--gris); padding: 10px 0; border-top: 1px solid var(--linea); border-bottom: 1px solid var(--linea); margin: 14px 0; }
+  .boton { display: inline-block; padding: 10px 20px; border: 1px solid var(--azul); background: var(--azul); color: #fff; font: 500 15px "IBM Plex Sans", sans-serif; cursor: pointer; border-radius: 2px; text-decoration: none; }
+  .boton:hover { background: #142a49; }
+  .boton.sec { background: #fff; color: var(--azul); }
+  .boton.sec:hover { background: var(--suave); }
+  .boton:disabled { opacity: .6; cursor: default; }
+  .acciones { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+  label { display: block; margin: 0 0 16px; font-weight: 500; font-size: 15px; }
+  label small { display: block; font-weight: 400; color: var(--gris); font-size: 13px; }
+  textarea, input[type=text] { display: block; width: 100%; margin-top: 6px; padding: 9px 10px; border: 1px solid #b9b5ab; border-radius: 2px; font: 15px/1.5 "IBM Plex Sans", sans-serif; }
+  textarea { min-height: 140px; resize: vertical; }
+  textarea:focus, input:focus { outline: 2px solid var(--azul); outline-offset: -1px; }
+  input[type=file] { display: block; margin-top: 6px; font-size: 14px; }
+  table.pauta { width: 100%; border-collapse: collapse; font-size: 14.5px; margin-bottom: 8px; }
+  table.pauta th { font-weight: 600; font-size: 12.5px; color: var(--gris); text-align: center; padding: 6px 4px; border-bottom: 1.5px solid var(--tinta); }
+  table.pauta th:first-child { text-align: left; }
+  table.pauta td { padding: 8px 4px; border-bottom: 1px solid var(--linea); text-align: center; }
+  table.pauta td:first-child { text-align: left; }
+  .opciones label { display: flex; gap: 10px; align-items: flex-start; font-weight: 400; margin-bottom: 8px; }
+  .opciones input { margin-top: 5px; }
+  .aviso { border-left: 3px solid var(--burdeo); padding: 8px 0 8px 14px; margin: 16px 0; font-size: 15px; }
+  .estado { margin-top: 12px; font-size: 14.5px; min-height: 22px; }
+  .estado.error { color: #9b1c1c; }
+  .coment { border-left: 3px solid var(--linea); padding: 4px 0 4px 14px; margin-bottom: 16px; white-space: pre-wrap; font-size: 15px; }
+  footer { border-top: 1px solid var(--linea); font-size: 13px; color: var(--gris); padding: 16px 0 30px; }
+  @media (max-width: 640px) { table.pauta { font-size: 13px; } table.pauta th, table.pauta td { padding: 6px 2px; } h1 { font-size: 22px; } }
+</style>
+</head>
+<body>
+<header><div class="ancho"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="46" height="46" style="flex:none"><path d="M83.10 24.14A42 42 0 1 0 50 92L95 87.5" fill="none" stroke="#1f3b63" stroke-width="9.5" stroke-linejoin="round"/><path d="M72.46 32.45A28.5 28.5 0 1 0 50 78.5L95 75.5" fill="none" stroke="#7a1f35" stroke-width="9.5" stroke-linejoin="round"/><path d="M61.82 40.77A15 15 0 1 0 50 65L95 63.5" fill="none" stroke="#b08a2e" stroke-width="9.5" stroke-linejoin="round"/></svg><div><b>Cuaderno Multidisciplinar de Investigación Aplicada</b><small>CMIA · Revista editada por IDEAX Chile</small></div></div></header>
+<main class="ancho" id="vista"><p class="tenue">Cargando…</p></main>
+<footer><div class="ancho">Este enlace es personal. Si tienes dudas, responde el correo que te enviamos o escribe a la revista. <a href="./">cmia.ideax.cl</a></div></footer>
+<script src="config.js"></script>
+<script>
+var T = new URLSearchParams(location.search).get('t') || '';
+function $(s) { return document.querySelector(s); }
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function pedir(params) { return fetch(CMIA_API + '?' + new URLSearchParams(params)).then(function (r) { return r.json(); }); }
+function enviar(d) { return fetch(CMIA_API, { method: 'POST', body: JSON.stringify(d) }).then(function (r) { return r.json(); }).then(function (r) { if (!r.ok) throw new Error(r.error || 'No se pudo completar.'); return r; }); }
+function leerArchivo(f, max, exts) {
+  return new Promise(function (ok, mal) {
+    if (!f) return ok(null);
+    var ext = f.name.split('.').pop().toLowerCase();
+    if (exts.indexOf(ext) < 0) return mal(new Error('El archivo «' + f.name + '» debe ser ' + exts.join(' o ') + '.'));
+    if (f.size > max * 1048576) return mal(new Error('El archivo «' + f.name + '» supera los ' + max + ' MB.'));
+    var r = new FileReader(); r.onload = function () { ok({ nombre: f.name, mime: f.type || 'application/octet-stream', base64: String(r.result).split(',')[1] }); };
+    r.onerror = function () { mal(new Error('No se pudo leer el archivo.')); }; r.readAsDataURL(f);
+  });
+}
+function error(m) { $('#vista').innerHTML = '<p class="rotulo">Aviso</p><h1>No pudimos abrir este enlace</h1><p>' + esc(m) + '</p>'; }
+function estado(m, err) { var e = $('#estado'); if (e) { e.className = 'estado' + (err ? ' error' : ''); e.textContent = m; } }
+
+var D = null;
+function cargar() {
+  if (!T) return error('Falta el código del enlace. Ábrelo directamente desde el correo.');
+  pedir({ api: 'autor', t: T }).then(function (r) { if (!r.ok) return error(r.error); D = r; pintar(); }).catch(function () { error('No hay conexión con la revista. Intenta de nuevo.'); });
+}
+function pintar() {
+  var h = '<p class="rotulo">Seguimiento del manuscrito</p><h1>' + esc(D.titulo) + '</h1>' +
+    '<div class="datos"><span>Código ' + esc(D.codigo) + '</span><span>Recibido el ' + esc(D.recibido) + '</span><span>Ronda ' + D.ronda + '</span></div>' +
+    '<p>Estado actual: <b>' + esc(D.estado) + '</b></p>';
+  if (D.decision) {
+    h += '<h2>Decisión editorial del ' + esc(D.decisionFecha) + '</h2><p><b>' + esc(D.decision) + '</b></p><div class="resumen" style="font-size:15.5px">' + esc(D.mensaje) + '</div>';
+    if (D.comentarios.length) h += '<h2>Comentarios de los evaluadores</h2>' + D.comentarios.map(function (c) { return '<p style="margin-bottom:4px"><b>' + esc(c.evaluador) + '</b> · ' + esc(c.dictamen) + '</p><div class="coment">' + esc(c.comentarios) + '</div>'; }).join('');
+  }
+  if (D.puedeSubir) {
+    h += '<form id="f"><h2>Subir la versión corregida</h2><p class="tenue">Adjunta el manuscrito corregido, sin nombres ni datos de los autores, y una carta de respuesta que explique cómo atendiste cada observación.</p>' +
+      '<label>Manuscrito corregido y anónimo <small>Word (.docx), hasta 10 MB.</small><input type="file" name="manuscrito" accept=".docx,.doc" required></label>' +
+      '<label>Carta de respuesta a los evaluadores <small>Word o PDF, hasta 5 MB.</small><input type="file" name="respuesta" accept=".docx,.doc,.pdf" required></label>' +
+      '<label>Nota para el equipo editorial <small>Opcional.</small><textarea name="nota" style="min-height:80px"></textarea></label>' +
+      '<label style="display:flex;gap:10px;font-weight:400"><input type="checkbox" name="anon" style="margin-top:5px">Confirmo que el manuscrito corregido no incluye nombres ni datos que identifiquen a los autores.</label>' +
+      '<button class="boton" type="submit" id="subir">Enviar la versión corregida</button><div class="estado" id="estado"></div></form>';
+  } else if (D.estado === 'Versión corregida recibida') h += '<div class="aviso">Recibimos tu versión corregida. El equipo editorial te escribirá con la decisión.</div>';
+  $('#vista').innerHTML = h;
+  if ($('#f')) $('#f').onsubmit = subir;
+}
+function subir(ev) {
+  ev.preventDefault(); var f = ev.target;
+  if (!f.manuscrito.files[0] || !f.respuesta.files[0]) return estado('Adjunta los dos archivos.', true);
+  if (!f.anon.checked) return estado('Confirma que el manuscrito es anónimo.', true);
+  var b = $('#subir'); b.disabled = true; estado('Subiendo los archivos, no cierres esta página…');
+  Promise.all([leerArchivo(f.manuscrito.files[0], 10, ['docx', 'doc']), leerArchivo(f.respuesta.files[0], 5, ['docx', 'doc', 'pdf'])]).then(function (a) {
+    return enviar({ accion: 'autorVersion', t: T, manuscrito: a[0], respuesta: a[1], nota: f.nota.value });
+  }).then(function () { D.estado = 'Versión corregida recibida'; D.puedeSubir = false; D.ronda += 1; pintar(); window.scrollTo(0, 0); })
+    .catch(function (e) { b.disabled = false; estado(e.message, true); });
+}
+cargar();
+
+</script>
+</body>
+</html>

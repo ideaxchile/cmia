@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Evaluación · CMIA</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root { --tinta: #1d1d1b; --gris: #5f6368; --linea: #d6d3cc; --suave: #f4f2ed; --azul: #1f3b63; --burdeo: #7a1f35; --serif: "IBM Plex Serif", Georgia, serif; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #fff; color: var(--tinta); font: 16px/1.6 "IBM Plex Sans", Arial, sans-serif; }
+  a { color: var(--azul); }
+  .ancho { max-width: 820px; margin: 0 auto; padding: 0 24px; }
+  header { border-bottom: 2px solid var(--tinta); padding: 22px 0 16px; }
+  header .ancho { display: flex; align-items: center; gap: 14px; }
+  header b { display: block; font: 500 19px/1.25 var(--serif); }
+  header small { color: var(--gris); font-size: 13px; }
+  main { padding: 30px 0 70px; }
+  .rotulo { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--burdeo); font-weight: 600; margin: 0 0 6px; }
+  h1 { font: 500 26px/1.3 var(--serif); margin: 0 0 8px; }
+  h2 { font: 600 12.5px "IBM Plex Sans", sans-serif; letter-spacing: .14em; text-transform: uppercase; margin: 30px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--linea); }
+  .tenue { color: var(--gris); font-size: 14.5px; }
+  .resumen { font-family: var(--serif); font-size: 16.5px; line-height: 1.7; white-space: pre-wrap; }
+  .datos { display: flex; flex-wrap: wrap; gap: 4px 20px; font-size: 14px; color: var(--gris); padding: 10px 0; border-top: 1px solid var(--linea); border-bottom: 1px solid var(--linea); margin: 14px 0; }
+  .boton { display: inline-block; padding: 10px 20px; border: 1px solid var(--azul); background: var(--azul); color: #fff; font: 500 15px "IBM Plex Sans", sans-serif; cursor: pointer; border-radius: 2px; text-decoration: none; }
+  .boton:hover { background: #142a49; }
+  .boton.sec { background: #fff; color: var(--azul); }
+  .boton.sec:hover { background: var(--suave); }
+  .boton:disabled { opacity: .6; cursor: default; }
+  .acciones { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+  label { display: block; margin: 0 0 16px; font-weight: 500; font-size: 15px; }
+  label small { display: block; font-weight: 400; color: var(--gris); font-size: 13px; }
+  textarea, input[type=text] { display: block; width: 100%; margin-top: 6px; padding: 9px 10px; border: 1px solid #b9b5ab; border-radius: 2px; font: 15px/1.5 "IBM Plex Sans", sans-serif; }
+  textarea { min-height: 140px; resize: vertical; }
+  textarea:focus, input:focus { outline: 2px solid var(--azul); outline-offset: -1px; }
+  input[type=file] { display: block; margin-top: 6px; font-size: 14px; }
+  table.pauta { width: 100%; border-collapse: collapse; font-size: 14.5px; margin-bottom: 8px; }
+  table.pauta th { font-weight: 600; font-size: 12.5px; color: var(--gris); text-align: center; padding: 6px 4px; border-bottom: 1.5px solid var(--tinta); }
+  table.pauta th:first-child { text-align: left; }
+  table.pauta td { padding: 8px 4px; border-bottom: 1px solid var(--linea); text-align: center; }
+  table.pauta td:first-child { text-align: left; }
+  .opciones label { display: flex; gap: 10px; align-items: flex-start; font-weight: 400; margin-bottom: 8px; }
+  .opciones input { margin-top: 5px; }
+  .aviso { border-left: 3px solid var(--burdeo); padding: 8px 0 8px 14px; margin: 16px 0; font-size: 15px; }
+  .estado { margin-top: 12px; font-size: 14.5px; min-height: 22px; }
+  .estado.error { color: #9b1c1c; }
+  .coment { border-left: 3px solid var(--linea); padding: 4px 0 4px 14px; margin-bottom: 16px; white-space: pre-wrap; font-size: 15px; }
+  footer { border-top: 1px solid var(--linea); font-size: 13px; color: var(--gris); padding: 16px 0 30px; }
+  @media (max-width: 640px) { table.pauta { font-size: 13px; } table.pauta th, table.pauta td { padding: 6px 2px; } h1 { font-size: 22px; } }
+</style>
+</head>
+<body>
+<header><div class="ancho"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="46" height="46" style="flex:none"><path d="M83.10 24.14A42 42 0 1 0 50 92L95 87.5" fill="none" stroke="#1f3b63" stroke-width="9.5" stroke-linejoin="round"/><path d="M72.46 32.45A28.5 28.5 0 1 0 50 78.5L95 75.5" fill="none" stroke="#7a1f35" stroke-width="9.5" stroke-linejoin="round"/><path d="M61.82 40.77A15 15 0 1 0 50 65L95 63.5" fill="none" stroke="#b08a2e" stroke-width="9.5" stroke-linejoin="round"/></svg><div><b>Cuaderno Multidisciplinar de Investigación Aplicada</b><small>CMIA · Revista editada por IDEAX Chile</small></div></div></header>
+<main class="ancho" id="vista"><p class="tenue">Cargando…</p></main>
+<footer><div class="ancho">Este enlace es personal. Si tienes dudas, responde el correo que te enviamos o escribe a la revista. <a href="./">cmia.ideax.cl</a></div></footer>
+<script src="config.js"></script>
+<script>
+var T = new URLSearchParams(location.search).get('t') || '';
+function $(s) { return document.querySelector(s); }
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function pedir(params) { return fetch(CMIA_API + '?' + new URLSearchParams(params)).then(function (r) { return r.json(); }); }
+function enviar(d) { return fetch(CMIA_API, { method: 'POST', body: JSON.stringify(d) }).then(function (r) { return r.json(); }).then(function (r) { if (!r.ok) throw new Error(r.error || 'No se pudo completar.'); return r; }); }
+function leerArchivo(f, max, exts) {
+  return new Promise(function (ok, mal) {
+    if (!f) return ok(null);
+    var ext = f.name.split('.').pop().toLowerCase();
+    if (exts.indexOf(ext) < 0) return mal(new Error('El archivo «' + f.name + '» debe ser ' + exts.join(' o ') + '.'));
+    if (f.size > max * 1048576) return mal(new Error('El archivo «' + f.name + '» supera los ' + max + ' MB.'));
+    var r = new FileReader(); r.onload = function () { ok({ nombre: f.name, mime: f.type || 'application/octet-stream', base64: String(r.result).split(',')[1] }); };
+    r.onerror = function () { mal(new Error('No se pudo leer el archivo.')); }; r.readAsDataURL(f);
+  });
+}
+function error(m) { $('#vista').innerHTML = '<p class="rotulo">Aviso</p><h1>No pudimos abrir este enlace</h1><p>' + esc(m) + '</p>'; }
+function estado(m, err) { var e = $('#estado'); if (e) { e.className = 'estado' + (err ? ' error' : ''); e.textContent = m; } }
+
+var D = null;
+function cargar() {
+  if (!T) return error('Falta el código del enlace. Ábrelo directamente desde el correo.');
+  pedir({ api: 'evaluacion', t: T }).then(function (r) { if (!r.ok) return error(r.error); D = r; pintar(); }).catch(function () { error('No hay conexión con la revista. Intenta de nuevo.'); });
+}
+function cabecera() {
+  return '<p class="rotulo">Evaluación por pares' + (D.ronda > 1 ? ' · versión corregida (ronda ' + D.ronda + ')' : '') + '</p><h1>' + esc(D.titulo) + '</h1>' +
+    '<div class="datos"><span>' + esc(D.area) + '</span><span>' + esc(D.tipo) + '</span>' + (D.estado === 'Aceptó' ? '<span>Plazo de entrega: <b>' + esc(D.plazo) + '</b></span>' : '') + '</div>';
+}
+function bajar(cual, b) {
+  b.disabled = true; var txt = b.textContent; b.textContent = 'Descargando…';
+  pedir({ api: 'evArchivo', t: T, cual: cual || '' }).then(function (r) {
+    if (!r.ok) throw new Error(r.error);
+    var bin = atob(r.base64), arr = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+    var u = URL.createObjectURL(new Blob([arr], { type: r.mime })), a = document.createElement('a'); a.href = u; a.download = r.nombre; document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(u); a.remove(); }, 800);
+  }).catch(function (e) { alert(e.message); }).then(function () { b.disabled = false; b.textContent = txt; });
+}
+function pintar() {
+  var v = $('#vista');
+  if (D.estado === 'Invitado') {
+    v.innerHTML = cabecera() + '<p>Estimado/a ' + esc(D.nombre) + ', te invitamos a evaluar este manuscrito. La evaluación es doble ciego: no conocerás a los autores y ellos no sabrán quién los evaluó.</p>' +
+      '<h2>Resumen</h2><div class="resumen">' + esc(D.resumen) + '</div>' +
+      '<h2>Tu respuesta</h2><p>Si aceptas, tendrás 21 días para entregar tu dictamen con una pauta breve de ocho criterios y tus comentarios para los autores. Si tienes un conflicto de interés o crees reconocer a los autores, te pedimos declinar.</p>' +
+      '<div class="acciones"><button class="boton" id="si">Acepto evaluar</button><button class="boton sec" id="no">No puedo evaluar</button></div>' +
+      '<div id="motivoBox" hidden style="margin-top:16px"><label>Motivo <small>Opcional. Nos ayuda si puedes sugerir a otra persona.</small><textarea id="motivo" style="min-height:90px"></textarea></label><button class="boton sec" id="noConfirma">Confirmar que no puedo evaluar</button></div><div class="estado" id="estado"></div>';
+    $('#si').onclick = function () { responder(true, this); };
+    $('#no').onclick = function () { $('#motivoBox').hidden = false; };
+    $('#noConfirma').onclick = function () { responder(false, this); };
+  } else if (D.estado === 'Aceptó') {
+    v.innerHTML = cabecera() + '<p>Gracias por aceptar. Descarga el manuscrito, léelo con calma y completa la pauta. Puedes volver a este enlace cuando quieras; lo que escribas se envía solo al apretar «Entregar evaluación».</p>' +
+      '<div class="acciones"><button class="boton sec" id="bajaM">Descargar el manuscrito</button>' + (D.tieneRespuesta ? '<button class="boton sec" id="bajaR">Descargar la respuesta de los autores</button>' : '') + '</div>' +
+      '<details style="margin-top:16px"><summary class="tenue" style="cursor:pointer">Ver el resumen</summary><div class="resumen" style="margin-top:10px">' + esc(D.resumen) + '</div></details>' +
+      '<form id="f"><h2>Pauta de evaluación</h2><p class="tenue">Califica cada criterio: 1 es muy deficiente y 5 es excelente.</p><table class="pauta"><thead><tr><th>Criterio</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr></thead><tbody>' +
+      D.criterios.map(function (c) { return '<tr><td>' + esc(c[1]) + '</td>' + [1, 2, 3, 4, 5].map(function (n) { return '<td><input type="radio" name="c_' + c[0] + '" value="' + n + '" aria-label="' + esc(c[1]) + ': ' + n + '"></td>'; }).join('') + '</tr>'; }).join('') +
+      '</tbody></table><h2>Dictamen</h2><div class="opciones">' + D.dictamenes.map(function (d) { return '<label><input type="radio" name="dictamen" value="' + esc(d) + '">' + esc(d) + '</label>'; }).join('') + '</div>' +
+      '<h2>Comentarios</h2><label>Para los autores <small>Se les envían sin tu nombre. Indica fortalezas, problemas y cambios concretos que propones.</small><textarea name="paraAutor" style="min-height:220px"></textarea></label>' +
+      '<label>Confidenciales para el equipo editorial <small>Opcional. Los autores no los verán.</small><textarea name="paraEditor" style="min-height:100px"></textarea></label>' +
+      '<label>Archivo con observaciones <small>Opcional. Word o PDF, hasta 10 MB. Revisa que no tenga tu nombre en el texto ni en las propiedades del archivo.</small><input type="file" name="archivo" accept=".docx,.doc,.pdf"></label>' +
+      '<button class="boton" type="submit" id="entregar">Entregar evaluación</button><div class="estado" id="estado"></div></form>';
+    $('#bajaM').onclick = function () { bajar('', this); };
+    if ($('#bajaR')) $('#bajaR').onclick = function () { bajar('respuesta', this); };
+    $('#f').onsubmit = entregar;
+  } else if (D.estado === 'Entregado') {
+    v.innerHTML = cabecera() + '<div class="aviso">Recibimos tu evaluación el ' + esc(D.entregado) + ', con el dictamen «' + esc(D.dictamen) + '». Muchas gracias por tu trabajo.</div><p class="tenue">Te enviamos una constancia por correo.</p>';
+  } else if (D.estado === 'Declinó') {
+    v.innerHTML = cabecera() + '<div class="aviso">Registramos que no puedes evaluar este manuscrito. Gracias por avisarnos.</div>';
+  } else error('Esta invitación ya no está vigente.');
+}
+function responder(acepta, b) {
+  b.disabled = true; estado('Enviando…');
+  enviar({ accion: 'evResponder', t: T, acepta: acepta, motivo: acepta ? '' : $('#motivo').value }).then(function (r) { D.estado = r.estado; D.plazo = r.plazo; pintar(); window.scrollTo(0, 0); })
+    .catch(function (e) { b.disabled = false; estado(e.message, true); });
+}
+function entregar(ev) {
+  ev.preventDefault();
+  var f = ev.target, crit = {}, falta = null;
+  D.criterios.forEach(function (c) { var s = f.querySelector('[name=c_' + c[0] + ']:checked'); if (s) crit[c[0]] = Number(s.value); else if (!falta) falta = c[1]; });
+  if (falta) return estado('Falta calificar: ' + falta + '.', true);
+  var dic = f.querySelector('[name=dictamen]:checked');
+  if (!dic) return estado('Elige un dictamen.', true);
+  if (f.paraAutor.value.trim().length < 80) return estado('Escribe tus comentarios para los autores, al menos unas líneas.', true);
+  if (!confirm('¿Entregar la evaluación? Después no podrás modificarla.')) return;
+  var b = $('#entregar'); b.disabled = true; estado('Enviando la evaluación…');
+  leerArchivo(f.archivo.files[0], 10, ['docx', 'doc', 'pdf']).then(function (a) {
+    return enviar({ accion: 'evEntregar', t: T, criterios: crit, dictamen: dic.value, paraAutor: f.paraAutor.value, paraEditor: f.paraEditor.value, archivo: a });
+  }).then(function () { D.estado = 'Entregado'; D.dictamen = dic.value; D.entregado = 'hoy'; pintar(); window.scrollTo(0, 0); })
+    .catch(function (e) { b.disabled = false; estado(e.message, true); });
+}
+cargar();
+
+</script>
+</body>
+</html>

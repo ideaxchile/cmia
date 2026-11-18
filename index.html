@@ -109,6 +109,26 @@
   .chico { font-size: 13px; }
   .chico button { background: none; border: none; color: var(--azul); padding: 0; font-size: 13px; }
 
+  .form { margin-top: 18px; }
+  .form fieldset { border: 0; border-top: 1px solid var(--linea); margin: 0 0 8px; padding: 14px 0 0; }
+  .form legend { font: 600 12.5px "IBM Plex Sans", sans-serif; letter-spacing: .14em; text-transform: uppercase; color: var(--burdeo); padding: 0 10px 0 0; }
+  .form label { display: block; margin: 0 0 14px; font-size: 14.5px; font-weight: 500; }
+  .form label small { display: block; font-weight: 400; color: var(--gris); font-size: 13px; }
+  .form input[type=text], .form input[type=email], .form select, .form textarea { display: block; width: 100%; margin-top: 5px; padding: 8px 10px; border: 1px solid #b9b5ab; border-radius: 2px; font: 15px "IBM Plex Sans", sans-serif; background: #fff; color: var(--tinta); }
+  .form textarea { min-height: 110px; resize: vertical; line-height: 1.5; }
+  .form input:focus, .form select:focus, .form textarea:focus { outline: 2px solid var(--azul); outline-offset: -1px; }
+  .form .dos { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+  .form input[type=file] { display: block; margin-top: 6px; font-size: 14px; }
+  .form .check { display: flex; gap: 10px; align-items: flex-start; font-weight: 400; margin-bottom: 10px; }
+  .form .check input { margin-top: 5px; flex: none; }
+  .form .trampa { position: absolute; left: -5000px; }
+  .form button.boton { cursor: pointer; font-size: 15px; padding: 10px 22px; background: var(--azul); color: #fff; }
+  .form button.boton:hover { background: #142a49; }
+  .form button.boton:disabled { opacity: .6; cursor: default; }
+  .estado-envio { margin-top: 14px; font-size: 14.5px; }
+  .estado-envio.error { color: #9b1c1c; }
+  .recibo { border-top: 2px solid var(--tinta); border-bottom: 1px solid var(--linea); padding: 16px 0; margin-top: 18px; }
+  .recibo b.codigo { font: 500 22px var(--serif); color: var(--burdeo); }
   aside { font-size: 14.5px; }
   aside section { margin-bottom: 28px; }
   aside h5 { font: 600 12px "IBM Plex Sans", sans-serif; letter-spacing: .14em; text-transform: uppercase; margin: 0 0 8px; padding-bottom: 6px; border-bottom: 2px solid var(--tinta); }
@@ -135,6 +155,7 @@
     .cabecera h1 { font-size: 25px; }
     .cabecera svg { width: 46px; height: 46px; }
     .numero { grid-template-columns: 100px minmax(0, 1fr); gap: 16px; }
+    .form .dos { grid-template-columns: 1fr; }
     .numero .tapa { width: 100px; padding: 10px 8px; }
     .numero .tapa b { font-size: 12px; }
     nav .ancho { gap: 18px; flex-wrap: nowrap; overflow-x: auto; white-space: nowrap; }
@@ -217,7 +238,7 @@ function contar(slug, tipo) {
 function lateral() {
   var r = R.revista;
   return '<aside>' +
-    (r.convocatoria ? '<section><h5>Convocatoria</h5><p>' + esc(r.convocatoria) + '</p>' + enlace('p/instrucciones', 'Enviar un manuscrito', 'boton') + '</section>' : '') +
+    (r.convocatoria ? '<section><h5>Convocatoria</h5><p>' + esc(r.convocatoria) + '</p>' + enlace('enviar', 'Enviar un manuscrito', 'boton') + '</section>' : '') +
     '<section><h5>Información</h5><dl>' + (r.issn ? '<dt>ISSN en línea</dt><dd>' + esc(r.issn) + '</dd>' : '') +
     '<dt>Entidad editora</dt><dd>' + esc(r.entidad) + '</dd><dt>Periodicidad</dt><dd>' + esc(r.periodicidad) + '</dd><dt>Arbitraje</dt><dd>' + esc(r.arbitraje) + '</dd>' +
     '<dt>Cargos por publicación</dt><dd>' + esc(r.cargos) + '</dd><dt>Idiomas</dt><dd>' + esc(r.idiomas) + '</dd><dt>Licencia</dt><dd>' + esc(r.licencia) + '</dd></dl></section>' +
@@ -276,6 +297,9 @@ function pagina(ruta) {
     titulo = 'Políticas';
     cont = '<p class="rotulo">La revista</p><h2>Políticas editoriales</h2><p class="tenue">Cómo trabaja la revista: arbitraje, ética, acceso abierto y preservación.</p><div class="politicas">' +
       R.paginas.map(function (p) { return '<a href="#p/' + esc(p.clave) + '"><b>' + esc(p.titulo) + '</b><span>' + esc(String(p.texto || '').replace(/[#*]/g, '').slice(0, 120)) + '…</span></a>'; }).join('') + '</div>';
+  } else if (ruta === 'enviar') {
+    titulo = 'Enviar un manuscrito'; act = 'p/instrucciones';
+    pintar(formularioEnvio(r), act, titulo); prepararEnvio(); return;
   } else if (ruta === 'contacto') {
     titulo = 'Contacto';
     var dir = R.equipo.filter(function (e) { return e.rol === 'Director'; })[0];
@@ -290,11 +314,75 @@ function pagina(ruta) {
       titulo = pg.titulo;
       cont = '<p class="rotulo">' + (act === 'politicas' ? 'Políticas' : 'La revista') + '</p><h2>' + esc(pg.titulo) + '</h2><div class="texto">' + md(pg.texto) + '</div>' +
         (pg.clave === 'instrucciones' ? '<h3 class="sub">Documentos para autores</h3><ul style="padding-left:18px">' + DESCARGAS.map(function (x) { return '<li><a href="descargas/' + x[0] + '" download>' + x[1] + '</a> <span class="tenue">(DOCX)</span></li>'; }).join('') + '</ul>' +
-          '<p style="margin-top:20px"><a class="boton" href="mailto:' + esc(r.correo) + '?subject=' + encodeURIComponent('Envío de manuscrito a CMIA') + '">Enviar el manuscrito por correo</a></p>' : '') +
+          '<p style="margin-top:20px">' + enlace('enviar', 'Enviar el manuscrito', 'boton') + '</p>' : '') +
         (pg.clave === 'enfoque' ? '<p style="margin-top:20px">' + enlace('politicas', 'Ver todas las políticas') + '</p>' : '');
     }
   } else { cont = '<p class="tenue">Página no encontrada.</p>'; }
   pintar(cont, act, titulo);
+}
+
+/* ---------- Envío de manuscritos ---------- */
+var AREAS_ENVIO = null;
+function formularioEnvio(r) {
+  var areas = (r.areas || []).map(function (a) { return '<option>' + esc(a) + '</option>'; }).join('');
+  var tipos = ['Artículo de investigación', 'Artículo de revisión', 'Estudio de caso', 'Nota técnica', 'Ensayo'].map(function (t) { return '<option>' + t + '</option>'; }).join('');
+  return '<p class="rotulo">Autores</p><h2>Enviar un manuscrito</h2>' +
+    '<p class="tenue">Antes de enviar, revisa las ' + enlace('p/instrucciones', 'instrucciones para autores') + ' y usa la ' +
+    '<a href="descargas/CMIA_Plantilla_para_autores.docx" download>plantilla de la revista</a>. El manuscrito debe venir sin nombres ni datos que identifiquen a los autores, porque la evaluación es doble ciego. Recibirás un correo con el código de tu envío.</p>' +
+    '<form class="form" id="fEnvio" novalidate>' +
+    '<fieldset><legend>Autor de correspondencia</legend><div class="dos">' +
+      '<label>Nombre completo<input type="text" name="nombre" required autocomplete="name"></label>' +
+      '<label>Correo electrónico<input type="email" name="correo" required autocomplete="email"></label>' +
+      '<label>Institución<input type="text" name="institucion" required autocomplete="organization"></label>' +
+      '<label>País<input type="text" name="pais" required autocomplete="country-name"></label></div>' +
+      '<label>ORCID <small>Opcional. Formato 0000-0000-0000-0000.</small><input type="text" name="orcid" inputmode="numeric" placeholder="0000-0000-0000-0000"></label>' +
+      '<label>Coautores <small>Nombre, institución y país de cada coautor, uno por línea.</small><textarea name="coautores" style="min-height:80px"></textarea></label></fieldset>' +
+    '<fieldset><legend>Manuscrito</legend>' +
+      '<label>Título<input type="text" name="titulo" required></label><div class="dos">' +
+      '<label>Área temática<select name="area" required><option value="">Elige un área</option>' + areas + '</select></label>' +
+      '<label>Tipo de trabajo<select name="tipo" required>' + tipos + '</select></label></div>' +
+      '<label>Resumen <small>Hasta 250 palabras.</small><textarea name="resumen" required></textarea></label>' +
+      '<label>Manuscrito anónimo <small>Word (.docx), hasta 10 MB.</small><input type="file" name="manuscrito" accept=".docx,.doc,application/vnd.openxmlformats-officedocument.wordprocessingml.document" required></label>' +
+      '<label>Carta de presentación firmada <small>Word o PDF, hasta 5 MB. Usa el <a href="descargas/CMIA_Carta_de_presentacion.docx" download>formato de la revista</a>.</small><input type="file" name="carta" accept=".docx,.doc,.pdf" required></label>' +
+      '<label>Comentarios para el equipo editorial <small>Opcional.</small><textarea name="comentarios" style="min-height:70px"></textarea></label></fieldset>' +
+    '<fieldset><legend>Declaraciones</legend>' +
+      '<label class="check"><input type="checkbox" name="d1" required>El trabajo es original, inédito y no está en evaluación en otra revista.</label>' +
+      '<label class="check"><input type="checkbox" name="d2" required>El manuscrito no incluye nombres ni datos que identifiquen a los autores.</label>' +
+      '<label class="check"><input type="checkbox" name="d3" required>Acepto las ' + enlace('politicas', 'políticas editoriales') + ' y que, si se publica, el artículo se difunda bajo licencia CC BY 4.0.</label>' +
+      '<input class="trampa" type="text" name="web" tabindex="-1" autocomplete="off" aria-hidden="true"></fieldset>' +
+    '<button class="boton" type="submit" id="bEnviar">Enviar manuscrito</button><div class="estado-envio" id="eEnvio" role="status"></div></form>';
+}
+function leerArchivo(f, max) {
+  return new Promise(function (ok, mal) {
+    if (!f) return ok(null);
+    if (f.size > max * 1048576) return mal(new Error('El archivo «' + f.name + '» supera los ' + max + ' MB.'));
+    var r = new FileReader();
+    r.onload = function () { ok({ nombre: f.name, mime: f.type || 'application/octet-stream', base64: String(r.result).split(',')[1] }); };
+    r.onerror = function () { mal(new Error('No se pudo leer el archivo «' + f.name + '».')); };
+    r.readAsDataURL(f);
+  });
+}
+function prepararEnvio() {
+  var f = $('#fEnvio'), est = $('#eEnvio'), b = $('#bEnviar');
+  f.onsubmit = function (e) {
+    e.preventDefault(); est.className = 'estado-envio';
+    var falta = Array.prototype.filter.call(f.querySelectorAll('[required]'), function (x) { return x.type === 'checkbox' ? !x.checked : !String(x.value || '').trim(); })[0];
+    if (falta) { est.className += ' error'; est.textContent = falta.type === 'checkbox' ? 'Debes aceptar las tres declaraciones.' : 'Falta completar: ' + (falta.closest('label').firstChild.textContent || 'un campo') + '.'; falta.focus(); return; }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.correo.value.trim())) { est.className += ' error'; est.textContent = 'Revisa el correo electrónico.'; f.correo.focus(); return; }
+    if (f.orcid.value.trim() && !/^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$/.test(f.orcid.value.trim())) { est.className += ' error'; est.textContent = 'El ORCID debe tener el formato 0000-0000-0000-0000.'; f.orcid.focus(); return; }
+    b.disabled = true; est.textContent = 'Subiendo los archivos, no cierres esta página…';
+    Promise.all([leerArchivo(f.manuscrito.files[0], 10), leerArchivo(f.carta.files[0], 5)]).then(function (arch) {
+      var d = { accion: 'envio', web: f.web.value, manuscrito: arch[0], carta: arch[1] };
+      ['nombre', 'correo', 'institucion', 'pais', 'orcid', 'coautores', 'titulo', 'area', 'tipo', 'resumen', 'comentarios'].forEach(function (k) { d[k] = f[k].value.trim(); });
+      return fetch(CMIA_API, { method: 'POST', body: JSON.stringify(d) }).then(function (x) { return x.json(); });
+    }).then(function (r) {
+      if (!r.ok) throw new Error(r.error || 'No se pudo enviar.');
+      $('#cuerpo').firstChild.innerHTML = '<p class="rotulo">Autores</p><h2>Recibimos tu manuscrito</h2><div class="recibo">Código del envío<br><b class="codigo">' + esc(r.codigo) +
+        '</b><p>Te enviamos una confirmación a <b>' + esc(f.correo.value.trim()) + '</b>. Usa este código cuando escribas a la revista. El equipo editorial hará una primera revisión y te escribirá con la decisión sobre el paso a evaluación externa.</p></div>' +
+        '<p>' + enlace('', 'Volver a la revista') + '</p>';
+      window.scrollTo(0, 0);
+    }).catch(function (err) { b.disabled = false; est.className = 'estado-envio error'; est.textContent = err.message === 'Failed to fetch' ? 'No hay conexión con la revista. Intenta de nuevo.' : err.message; });
+  };
 }
 
 function pintar(cont, act, titulo) {

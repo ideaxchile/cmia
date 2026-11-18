@@ -248,7 +248,7 @@ function comprimir(file, maxW, maxH) {
 
 
 /* ===== Revista CMIA ===== */
-var RV = { sub: 'numeros', datos: null, filtroNum: '' };
+var RV = { sub: 'envios', datos: null, filtroNum: '' };
 function vRevista() {
   run('adminRevista').then(function (r) { RV.datos = r; pintarRevista(); }).catch(function (e) { toast(e.message, true); });
 }
@@ -257,8 +257,9 @@ function rvNumTxt(n) { return n ? 'Vol. ' + n.volumen + ', Núm. ' + n.numero + 
 function rvAutores(l) { return (l || []).map(function (x) { return (x.nombres || '') + ' ' + (x.apellidos || ''); }).join(', '); }
 function pintarRevista() {
   var R = RV.datos, s = RV.sub;
-  var subs = [['numeros', 'Números'], ['articulos', 'Artículos'], ['equipo', 'Equipo editorial'], ['paginas', 'Políticas'], ['ajustes', 'Datos de la revista']];
-  var tit = { numeros: 'Números', articulos: 'Artículos', equipo: 'Equipo editorial', paginas: 'Políticas', ajustes: 'Datos de la revista' }[s];
+  var nuevos = (R.envios || []).filter(function (e) { return e.estado === 'Recibido'; }).length;
+  var subs = [['envios', 'Envíos' + (nuevos ? ' (' + nuevos + ')' : '')], ['numeros', 'Números'], ['articulos', 'Artículos'], ['evaluadores', 'Evaluadores'], ['equipo', 'Equipo editorial'], ['paginas', 'Políticas'], ['ajustes', 'Datos de la revista']];
+  var tit = { envios: 'Envíos de manuscritos', evaluadores: 'Evaluadores', numeros: 'Números', articulos: 'Artículos', equipo: 'Equipo editorial', paginas: 'Políticas', ajustes: 'Datos de la revista' }[s];
   var h = '<div class="head"><div><h2>' + tit + '</h2><p class="sub">' + esc(R.nombre) + ' (' + R.sigla + ')</p></div></div>';
   if (!R.instalada) h += '<div class="empty" style="text-align:left;color:var(--bad)"><b>Falta instalar la revista.</b> Abre Codigo.gs en Apps Script y ejecuta una vez la función instalar. Crea la planilla, las carpetas de Drive, los textos base de las políticas y el equipo inicial.</div>';
   $('#tabs').innerHTML = subs.map(function (x) { return '<button type="button" data-rs="' + x[0] + '" aria-pressed="' + (s === x[0]) + '">' + x[1] + '</button>'; }).join('');
@@ -287,6 +288,22 @@ function pintarRevista() {
           '</div><div class="hint" style="margin-top:4px">' + esc(rvAutores(a.autoresLista)) + (Number(a.lecturas) ? ' · ' + a.lecturas + ' lecturas, ' + (a.descargas || 0) + ' descargas' : '') + '</div></div>' +
           '<div class="row-actions"><button class="btn btn-sm" data-rvaed="' + a.id + '">Editar</button><button class="btn btn-d btn-sm" data-rvadel="' + a.id + '">Eliminar</button></div></div>';
       }).join('') + '</div>' : '<div class="empty">' + (R.numeros.length ? 'No hay artículos aquí. Usa «Nuevo artículo».' : 'Primero crea un número en la pestaña Números.') + '</div>');
+  } else if (s === 'envios') {
+    var E = R.envios || [];
+    h += '<p class="hint" style="margin:6px 0 12px">Manuscritos recibidos desde el formulario del sitio. Los archivos quedan privados en Drive, en la carpeta Envíos. Cada envío nuevo te llega por correo.</p>' +
+      (E.length ? '<div class="list">' + E.map(function (e) {
+        return '<div class="row"><div class="row-main"><div class="row-title">' + esc(e.titulo) + '</div><div class="row-meta"><span class="et' + (e.estado === 'Recibido' ? ' alerta' : (e.estado === 'Aceptado' ? ' ok' : '')) + '">' + esc(e.estado) + '</span><span>' + esc(e.codigo) + '</span><span>' + esc(e.fecha) + '</span><span>' + esc(e.nombre) + ', ' + esc(e.institucion) + '</span><span>' + esc(e.area) + '</span>' + (function () { var l = evDeEnvio(e.codigo).filter(function (v) { return Number(v.ronda) === (Number(e.ronda) || 1) && ['Declinó', 'Cancelada'].indexOf(v.estado) < 0; }); return l.length ? '<span>Ronda ' + (e.ronda || 1) + ': ' + l.filter(function (v) { return v.estado === 'Entregado'; }).length + ' de ' + l.length + ' evaluaciones</span>' : ''; })() + '</div></div>' +
+          '<div class="row-actions"><a class="btn btn-sm" href="' + esc(e.manuscritoUrl) + '" target="_blank" rel="noopener">Manuscrito</a><a class="btn btn-sm" href="' + esc(e.cartaUrl) + '" target="_blank" rel="noopener">Carta</a><button class="btn btn-sm" data-rvenv="' + esc(e.codigo) + '">Gestionar</button></div></div>';
+      }).join('') + '</div>' : '<div class="empty">Todavía no llegan manuscritos. El formulario está en cmia.ideax.cl, en «Enviar un manuscrito».</div>');
+  } else if (s === 'evaluadores') {
+    var EV = R.evaluadores || [], cuenta = function (id, est) { return (R.evaluaciones || []).filter(function (v) { return v.evaluadorId === id && (!est || v.estado === est); }).length; };
+    h += '<div style="margin:6px 0 10px"><button class="btn btn-p" id="rvNuevoEv">Agregar evaluador</button></div>' +
+      '<p class="hint" style="margin:0 0 12px">Banco de evaluadores externos. No se publica. Desde cada envío se les invita con un enlace privado; aceptan, descargan el manuscrito anónimo y entregan la pauta sin crear cuenta.</p>' +
+      (EV.length ? '<div class="list">' + EV.map(function (x) {
+        return '<div class="row"><div class="row-main"><div class="row-title">' + esc(x.nombre) + '</div><div class="row-meta">' + (x.activo === 'NO' ? '<span class="et">No disponible</span>' : '') +
+          '<span>' + esc([x.institucion, x.pais].filter(Boolean).join(', ')) + '</span>' + (x.areas ? '<span>' + esc(x.areas) + '</span>' : '') + '<span>' + cuenta(x.id, 'Entregado') + ' entregadas de ' + cuenta(x.id) + ' invitaciones</span></div></div>' +
+          '<div class="row-actions"><button class="btn btn-sm" data-rvev="' + x.id + '">Editar</button></div></div>';
+      }).join('') + '</div>' : '<div class="empty">Agrega a los académicos que pueden evaluar para la revista. Conviene tener al menos dos por área.</div>');
   } else if (s === 'equipo') {
     var ext = R.equipo.filter(function (e) { return !/ideax/i.test(e.institucion || ''); }).length, tot = R.equipo.length;
     h += '<div style="margin:6px 0 10px"><button class="btn btn-p" id="rvNuevoEq">Agregar persona</button></div>' +
@@ -325,6 +342,9 @@ function pintarRevista() {
   if ($('#rvNuevoEq')) $('#rvNuevoEq').onclick = function () { abrirEquipo(); };
   if ($('#rvFiltro')) $('#rvFiltro').onchange = function () { RV.filtroNum = this.value; pintarRevista(); };
   on('[data-rved]', function (b) { abrirNumero(rvNum(b.getAttribute('data-rved'))); });
+  if ($('#rvNuevoEv')) $('#rvNuevoEv').onclick = function () { abrirEvaluador(); };
+  on('[data-rvev]', function (b) { abrirEvaluador((R.evaluadores || []).filter(function (x) { return x.id === b.getAttribute('data-rvev'); })[0]); });
+  on('[data-rvenv]', function (b) { abrirEnvio((R.envios || []).filter(function (e) { return e.codigo === b.getAttribute('data-rvenv'); })[0]); });
   on('[data-rvart]', function (b) { RV.sub = 'articulos'; RV.filtroNum = b.getAttribute('data-rvart'); pintarRevista(); });
   on('[data-rvdel]', function (b) { if (!confirm('¿Eliminar este número? Solo se puede si no tiene artículos y no está publicado.')) return; run('adminRevistaEliminarNumero', b.getAttribute('data-rvdel')).then(function () { toast('Número eliminado.'); vRevista(); }).catch(function (e) { toast(e.message, true); }); });
   on('[data-rvaed]', function (b) { abrirArticulo(R.articulos.filter(function (a) { return a.id === b.getAttribute('data-rvaed'); })[0]); });
@@ -426,13 +446,121 @@ function abrirEquipo(e) {
     '<div class="grid2"><label class="field">País<input name="pais" value="' + esc(e.pais) + '"></label><label class="field">ORCID<input name="orcid" value="' + esc(e.orcid) + '" placeholder="0000-0000-0000-0000"></label></div>' +
     '<label class="field">Correo (no se publica)<input type="email" name="correo" value="' + esc(e.correo) + '"></label>');
 }
+/* ===== Envíos y arbitraje ===== */
+var DEC_TEXTO = {
+  'Aceptado': 'Nos complace informarle que su manuscrito fue aceptado para publicación en la revista. En los próximos días le escribiremos para la edición final y la revisión de pruebas.',
+  'Requiere cambios menores': 'Los evaluadores valoran el trabajo y recomiendan su publicación una vez atendidas algunas observaciones menores. Le pedimos revisar los comentarios que siguen y enviar la versión corregida dentro de 15 días.',
+  'Requiere cambios mayores': 'Los evaluadores reconocen el interés del trabajo, pero señalan observaciones de fondo que deben resolverse antes de considerar su publicación. Le pedimos revisar los comentarios que siguen y enviar la versión corregida dentro de 30 días. La nueva versión volverá a evaluación.',
+  'Rechazado': 'Lamentamos informarle que, tras la revisión, su manuscrito no fue aceptado para publicación en la revista. Le compartimos los comentarios recibidos, con la esperanza de que le sean útiles para continuar el trabajo.'
+};
+function evDeEnvio(cod) { return (RV.datos.evaluaciones || []).filter(function (v) { return v.codigo === cod; }); }
+function refrescarEnvio(cod, msg, err) {
+  return run('adminRevista').then(function (r) {
+    RV.datos = r; pintarRevista();
+    var e = (r.envios || []).filter(function (x) { return x.codigo === cod; })[0];
+    if (e) abrirEnvio(e);
+    if (msg) toast(msg, err);
+  });
+}
+function accionEnvio(boton, fn, args, cod, ok) {
+  boton.disabled = true;
+  run(fn, args).then(function (r) { return refrescarEnvio(cod, (r && r._aviso) || ok, !!(r && r._aviso)); })
+    .catch(function (er) { toast(er.message, true); boton.disabled = false; });
+}
+function abrirEnvio(e) {
+  var R = RV.datos, f = function (k, v) { return v ? '<div style="margin-bottom:10px"><div class="hint">' + k + '</div><div style="white-space:pre-wrap">' + esc(v) + '</div></div>' : ''; };
+  var evs = evDeEnvio(e.codigo), ronda = Number(e.ronda) || 1, final = ['Aceptado', 'Rechazado', 'Retirado'].indexOf(e.estado) > -1;
+  var rondas = []; for (var i = ronda; i >= 1; i--) rondas.push(i);
+  var asignados = evs.filter(function (v) { return Number(v.ronda) === ronda && ['Declinó', 'Cancelada'].indexOf(v.estado) < 0; }).map(function (v) { return v.evaluadorId; });
+  var previos = evs.filter(function (v) { return Number(v.ronda) === ronda - 1 && v.estado === 'Entregado' && asignados.indexOf(v.evaluadorId) < 0; });
+  var disp = (R.evaluadores || []).filter(function (x) { return x.activo !== 'NO' && asignados.indexOf(x.id) < 0; });
+  var tablaEv = rondas.map(function (rd) {
+    var l = evs.filter(function (v) { return Number(v.ronda) === rd; });
+    return '<div class="hint" style="margin:10px 0 4px">Ronda ' + rd + '</div>' + (l.length ? l.map(function (v) {
+      var cls = v.estado === 'Entregado' ? ' ok' : (['Declinó', 'Cancelada'].indexOf(v.estado) > -1 ? '' : ' alerta');
+      return '<div class="row" style="padding:8px 0"><div class="row-main"><div><b>' + esc(v.nombre) + '</b></div><div class="row-meta"><span class="et' + cls + '">' + esc(v.estado) + '</span>' +
+        (v.estado === 'Aceptó' || v.estado === 'Invitado' ? '<span>Plazo ' + esc(v.plazo) + '</span>' : '') + (v.dictamen ? '<span>' + esc(v.dictamen) + '</span>' : '') + (v.motivo ? '<span>Motivo: ' + esc(v.motivo) + '</span>' : '') + '</div></div>' +
+        '<div class="row-actions">' + (v.estado === 'Entregado' ? '<button type="button" class="btn btn-sm" data-evver="' + v.id + '">Ver dictamen</button>' : '') +
+        (v.estado === 'Invitado' || v.estado === 'Aceptó' ? '<button type="button" class="btn btn-sm" data-evrec="' + v.id + '">Recordar</button>' : '') +
+        (v.estado === 'Aceptó' ? '<button type="button" class="btn btn-sm" data-evpla="' + v.id + '">+7 días</button>' : '') +
+        (v.estado === 'Invitado' || v.estado === 'Aceptó' ? '<button type="button" class="btn btn-d btn-sm" data-evcan="' + v.id + '">Cancelar</button>' : '') + '</div></div>';
+    }).join('') : '<div class="hint">Sin evaluadores asignados.</div>');
+  }).join('');
+  var vers = (e.versiones || []).map(function (v) {
+    return '<li>Ronda ' + v.ronda + ' · ' + esc(v.fecha) + ' · <a href="' + esc(v.manuscritoUrl) + '" target="_blank" rel="noopener">manuscrito</a>' + (v.respuestaUrl ? ' · <a href="' + esc(v.respuestaUrl) + '" target="_blank" rel="noopener">respuesta a los evaluadores</a>' : '') + '</li>';
+  }).join('');
+  var html = '<div class="row-title" style="margin-bottom:6px">' + esc(e.titulo) + '</div><p class="row-meta" style="margin:0 0 14px"><span class="et">' + esc(e.estado) + '</span><span>Ronda ' + ronda + '</span><span>Recibido ' + esc(e.fecha) + '</span></p>' +
+    f('Autor de correspondencia', e.nombre + ' · ' + e.correo) + f('Institución', e.institucion + ', ' + e.pais) + f('ORCID', e.orcid) + f('Coautores', e.coautores) +
+    f('Área y tipo', e.area + ' · ' + e.tipo) + f('Resumen', e.resumen) + f('Comentarios del autor', e.comentarios) +
+    '<div class="hint">Archivos</div><ul style="margin:4px 0 10px;padding-left:18px">' + vers + '<li><a href="' + esc(e.cartaUrl) + '" target="_blank" rel="noopener">Carta de presentación</a></li></ul>' +
+    '<p><a href="mailto:' + esc(e.correo) + '?subject=' + encodeURIComponent(e.codigo + ': ' + e.titulo) + '">Escribir al autor</a></p>' +
+    '<div class="agenda"><h3>Evaluación por pares</h3></div>' + tablaEv +
+    (final ? '' : '<div class="grid2" style="margin-top:14px;align-items:end"><label class="field" style="margin:0">Asignar evaluador<select id="evSel"><option value="">Elige un evaluador</option>' +
+      disp.map(function (x) { return '<option value="' + x.id + '">' + esc(x.nombre) + (x.areas ? ' · ' + esc(x.areas) : '') + (x.institucion ? ' (' + esc(x.institucion) + ')' : '') + '</option>'; }).join('') + '</select></label>' +
+      '<div style="display:flex;gap:8px;align-items:end"><label class="field" style="margin:0;width:90px">Días<input id="evDias" type="number" min="5" max="60" value="21"></label><button type="button" class="btn btn-p" id="evAsignar">Enviar invitación</button></div></div>' +
+      '<p class="hint" style="margin-top:6px">' + (disp.length ? 'Se le envía un correo con un enlace privado; no necesita cuenta.' : 'Agrega evaluadores en la pestaña Evaluadores.') + '</p>' +
+      (previos.length ? '<p><button type="button" class="btn btn-sm" id="evPrevios">Enviar la ronda ' + ronda + ' a los evaluadores anteriores (' + previos.map(function (v) { return esc(v.nombre); }).join(', ') + ')</button></p>' : '')) +
+    (final ? '' : '<div class="agenda"><h3>Decisión editorial</h3></div><label class="field" style="margin-top:12px">Decisión' + rvSel('decisionSel', [''].concat(R.decisiones), '') + '</label>' +
+      '<label class="field">Mensaje para el autor<textarea id="decMsg" style="min-height:130px" placeholder="Elige una decisión para cargar un texto base"></textarea><span class="hint">Se envía por correo junto con los comentarios de los evaluadores de la ronda actual, sin sus nombres.</span></label>' +
+      '<label class="field" style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="decCom" checked style="width:auto;margin:0">Incluir los comentarios de los evaluadores</label>' +
+      '<p><button type="button" class="btn btn-p" id="decEnviar">Enviar la decisión al autor</button></p>') +
+    (e.estado === 'Aceptado' ? '<div class="agenda"><h3>Publicación</h3></div>' + (e.articuloId ? '<p>El artículo ya está creado. Complétalo en la pestaña Artículos (título en inglés, palabras clave, páginas y PDF).</p>' :
+      '<div style="display:flex;gap:8px;align-items:end;margin-top:12px"><label class="field" style="margin:0;flex:1">Número' + rvSel('numSel', (R.numeros || []).map(function (n) { return [n.id, rvNumTxt(n)]; }), (R.numeros[0] || {}).id) + '</label><button type="button" class="btn btn-p" id="artCrear">Crear el artículo</button></div>' +
+      '<p class="hint">Se crea como borrador con el título, resumen, autores y fechas de recepción y aceptación.</p>') : '') +
+    '<div class="agenda"><h3>Seguimiento interno</h3></div><label class="field" style="margin-top:12px">Estado' + rvSel('estado', R.estadosEnvio, e.estado) + '</label>' +
+    '<label class="field">Notas internas (no las ve el autor)<textarea name="notas">' + esc(e.notas) + '</textarea></label>';
+  rvAbrir('r_envio', e.codigo, e.codigo, html);
+  var cod = e.codigo;
+  $$('[data-evver]').forEach(function (b) { b.onclick = function () { verDictamen(evs.filter(function (v) { return v.id === b.getAttribute('data-evver'); })[0], e); }; });
+  $$('[data-evrec]').forEach(function (b) { b.onclick = function () { accionEnvio(b, 'adminRevistaEvaluacion', { id: b.getAttribute('data-evrec'), accion: 'recordar' }, cod, 'Recordatorio enviado.'); }; });
+  $$('[data-evpla]').forEach(function (b) { b.onclick = function () { accionEnvio(b, 'adminRevistaEvaluacion', { id: b.getAttribute('data-evpla'), accion: 'plazo', dias: 7 }, cod, 'Plazo ampliado en 7 días y aviso enviado.'); }; });
+  $$('[data-evcan]').forEach(function (b) { b.onclick = function () { if (confirm('¿Cancelar esta evaluación? Se le avisará al evaluador.')) accionEnvio(b, 'adminRevistaEvaluacion', { id: b.getAttribute('data-evcan'), accion: 'cancelar' }, cod, 'Evaluación cancelada.'); }; });
+  if ($('#evAsignar')) $('#evAsignar').onclick = function () { var id = $('#evSel').value; if (!id) { toast('Elige un evaluador.', true); return; } accionEnvio(this, 'adminRevistaAsignar', { codigo: cod, evaluadorId: id, dias: $('#evDias').value }, cod, 'Invitación enviada.'); };
+  if ($('#evPrevios')) $('#evPrevios').onclick = function () {
+    var b = this; b.disabled = true;
+    previos.reduce(function (p, v) { return p.then(function () { return run('adminRevistaAsignar', { codigo: cod, evaluadorId: v.evaluadorId, dias: 15 }); }); }, Promise.resolve())
+      .then(function () { return refrescarEnvio(cod, 'Invitaciones enviadas.'); }).catch(function (er) { toast(er.message, true); b.disabled = false; });
+  };
+  var ds = $('#edBody [name=decisionSel]');
+  if (ds) ds.onchange = function () { if (DEC_TEXTO[this.value]) $('#decMsg').value = DEC_TEXTO[this.value]; };
+  if ($('#decEnviar')) $('#decEnviar').onclick = function () {
+    var dec = ds.value; if (!dec) { toast('Elige una decisión.', true); return; }
+    if (!confirm('¿Enviar al autor la decisión «' + dec + '»?')) return;
+    accionEnvio(this, 'adminRevistaDecidir', { codigo: cod, decision: dec, mensaje: $('#decMsg').value, incluirComentarios: $('#decCom').checked }, cod, 'Decisión enviada al autor.');
+  };
+  if ($('#artCrear')) $('#artCrear').onclick = function () { accionEnvio(this, 'adminRevistaCrearArticulo', { codigo: cod, numeroId: $('#edBody [name=numSel]').value }, cod, 'Artículo creado como borrador en la pestaña Artículos.'); };
+}
+function verDictamen(v, e) {
+  var R = RV.datos, c = v.criterios || {};
+  var html = '<p><button type="button" class="btn btn-sm" id="evVolver">Volver al envío</button></p>' +
+    '<div class="row-title">' + esc(v.nombre) + '</div><p class="row-meta" style="margin:4px 0 14px"><span>Ronda ' + v.ronda + '</span><span>Entregado ' + esc(v.entregado) + '</span><span class="et ok">' + esc(v.dictamen) + '</span></p>' +
+    '<table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:14px">' + (R.criterios || []).map(function (k) {
+      return '<tr style="border-bottom:1px solid var(--linea)"><td style="padding:6px 0">' + esc(k[1]) + '</td><td style="text-align:right;font-weight:600">' + (c[k[0]] || '') + ' / 5</td></tr>'; }).join('') + '</table>' +
+    '<div class="hint">Comentarios para los autores</div><div style="white-space:pre-wrap;margin-bottom:14px">' + esc(v.paraAutor) + '</div>' +
+    (v.paraEditor ? '<div class="hint">Comentarios confidenciales para el equipo editorial</div><div style="white-space:pre-wrap;margin-bottom:14px">' + esc(v.paraEditor) + '</div>' : '') +
+    (v.archivoUrl ? '<p><a href="' + esc(v.archivoUrl) + '" target="_blank" rel="noopener">Abrir el archivo con observaciones</a></p>' : '');
+  rvAbrir('r_envio', e.codigo, e.codigo + ' · dictamen', html);
+  $('#evVolver').onclick = function () { abrirEnvio(e); };
+}
+function abrirEvaluador(x) {
+  x = x || {};
+  rvAbrir('r_evaluador', x.id, x.id ? 'Editar evaluador' : 'Nuevo evaluador',
+    '<label class="field">Nombre completo<input name="nombre" required value="' + esc(x.nombre) + '"></label>' +
+    '<label class="field">Correo<input type="email" name="correo" required value="' + esc(x.correo) + '"></label>' +
+    '<label class="field">Institución<input name="institucion" value="' + esc(x.institucion) + '"></label>' +
+    '<div class="grid2"><label class="field">País<input name="pais" value="' + esc(x.pais) + '"></label><label class="field">ORCID<input name="orcid" value="' + esc(x.orcid) + '" placeholder="0000-0000-0000-0000"></label></div>' +
+    '<label class="field">Áreas de especialidad<input name="areas" value="' + esc(x.areas) + '" placeholder="Marketing, métodos cuantitativos"></label>' +
+    '<label class="field">Disponible' + rvSel('activo', [['SI', 'Sí'], ['NO', 'No, por ahora']], x.activo || 'SI') + '</label>' +
+    '<p class="hint">El evaluador no necesita cuenta: recibe un enlace privado por cada manuscrito. Sus datos no se publican.</p>');
+}
 function abrirPaginaRv(p) {
   rvAbrir('r_pagina', p.clave, 'Editar: ' + p.titulo,
     '<label class="field">Título<input name="titulo" value="' + esc(p.titulo) + '"></label>' +
     '<label class="field">Texto<textarea name="texto" style="min-height:420px;font-family:\'IBM Plex Serif\',Georgia,serif;font-size:16px;line-height:1.6">' + esc(p.texto) + '</textarea><span class="hint">Línea en blanco entre párrafos. Subtítulo: <b>## Texto</b>. Negrita: <b>**texto**</b>.</span></label>');
 }
 function guardarRevista(d) {
-  var t = S.edit.tipo, A = S.archivos, fn = { r_numero: 'adminRevistaGuardarNumero', r_articulo: 'adminRevistaGuardarArticulo', r_equipo: 'adminRevistaGuardarEquipo', r_pagina: 'adminRevistaGuardarPagina' }[t];
+  var t = S.edit.tipo, A = S.archivos, fn = { r_numero: 'adminRevistaGuardarNumero', r_articulo: 'adminRevistaGuardarArticulo', r_equipo: 'adminRevistaGuardarEquipo', r_pagina: 'adminRevistaGuardarPagina', r_envio: 'adminRevistaGuardarEnvio', r_evaluador: 'adminRevistaGuardarEvaluador' }[t];
+  if (t === 'r_envio') d.codigo = S.edit.id;
   if (t === 'r_pagina') d.clave = S.edit.id;
   if (t === 'r_articulo') {
     d.autores = $$('#auLista .au-fila').map(function (f) { var o = {}; Array.prototype.slice.call(f.querySelectorAll('[data-au]')).forEach(function (i) { o[i.getAttribute('data-au')] = i.value.trim(); }); return o; })
