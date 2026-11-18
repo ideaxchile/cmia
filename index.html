@@ -341,8 +341,9 @@ function formularioEnvio(r) {
     '<fieldset><legend>Autor de correspondencia</legend><div class="dos">' +
       '<label>Nombre completo<input type="text" name="nombre" required autocomplete="name"></label>' +
       '<label>Correo electrónico<input type="email" name="correo" required autocomplete="email"></label>' +
-      '<label>Institución<input type="text" name="institucion" required autocomplete="organization"></label>' +
-      '<label>País<input type="text" name="pais" required autocomplete="country-name"></label></div>' +
+      '<label>Afiliación 1 <small>Institución completa: universidad, facultad o departamento.</small><input type="text" name="institucion" required autocomplete="organization"></label>' +
+      '<label>País<small>&nbsp;</small><input type="text" name="pais" required autocomplete="country-name"></label>' +
+      '<label>Afiliación 2 <small>Opcional.</small><input type="text" name="institucion2"></label><label>Afiliación 3 <small>Opcional.</small><input type="text" name="institucion3"></label></div>' +
       '<label>ORCID <small>Opcional. Formato 0000-0000-0000-0000.</small><input type="text" name="orcid" inputmode="numeric" placeholder="0000-0000-0000-0000"></label>' +
       '</fieldset><fieldset><legend>Coautores</legend><p class="tenue" style="margin:0 0 12px">Agrega a cada coautor con su correo: todos los autores reciben las comunicaciones de la revista y, si el trabajo se publica, su certificado de publicación.</p>' +
       '<div id="coLista"></div><button type="button" class="boton" id="coAgregar" style="background:#fff;color:var(--azul);margin-bottom:6px">Agregar coautor</button></fieldset><fieldset><legend>Manuscrito</legend>' +
@@ -387,7 +388,8 @@ function prepararContacto() {
 function filaCoautor() {
   var d = document.createElement('div'); d.className = 'co dos'; d.style.cssText = 'border-left:3px solid var(--linea);padding-left:12px;margin-bottom:10px';
   d.innerHTML = '<label>Nombre completo<input type="text" data-co="nombre"></label><label>Correo electrónico<input type="email" data-co="correo"></label>' +
-    '<label>Institución<input type="text" data-co="institucion"></label><label>País<input type="text" data-co="pais"></label>' +
+    '<label>Afiliación 1<input type="text" data-co="institucion"></label><label>País<input type="text" data-co="pais"></label>' +
+    '<label>Afiliación 2 <small>Opcional.</small><input type="text" data-co="institucion2"></label><label>Afiliación 3 <small>Opcional.</small><input type="text" data-co="institucion3"></label>' +
     '<label>ORCID <small>Opcional.</small><input type="text" data-co="orcid" placeholder="0000-0000-0000-0000"></label><div style="align-self:end;margin-bottom:14px"><button type="button" class="boton" style="background:#fff;color:#9b1c1c;border-color:#9b1c1c">Quitar</button></div>';
   d.querySelector('button').onclick = function () { d.remove(); };
   $('#coLista').appendChild(d);
@@ -406,11 +408,11 @@ function prepararEnvio() {
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.correo.value.trim())) { est.className += ' error'; est.textContent = 'Revisa el correo electrónico.'; f.correo.focus(); return; }
     if (f.orcid.value.trim() && !/^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$/.test(f.orcid.value.trim())) { est.className += ' error'; est.textContent = 'El ORCID debe tener el formato 0000-0000-0000-0000.'; f.orcid.focus(); return; }
     var malCo = coautores().filter(function (c) { return !c.nombre || !c.institucion || !c.pais || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(c.correo) || (c.orcid && !/^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$/.test(c.orcid)); })[0];
-    if (malCo) { est.className += ' error'; est.textContent = 'Completa nombre, correo, institución y país de ' + (malCo.nombre || 'cada coautor') + ' (el ORCID es opcional).'; return; }
+    if (malCo) { est.className += ' error'; est.textContent = 'Completa nombre, correo, afiliación 1 y país de ' + (malCo.nombre || 'cada coautor') + ' (el ORCID es opcional).'; return; }
     b.disabled = true; est.textContent = 'Subiendo los archivos, no cierres esta página…';
     Promise.all([leerArchivo(f.manuscrito.files[0], 10), leerArchivo(f.carta.files[0], 5)]).then(function (arch) {
       var d = { accion: 'envio', web: f.web.value, manuscrito: arch[0], carta: arch[1] };
-      ['nombre', 'correo', 'institucion', 'pais', 'orcid', 'titulo', 'area', 'tipo', 'resumen', 'comentarios'].forEach(function (k) { d[k] = f[k].value.trim(); });
+      ['nombre', 'correo', 'institucion', 'institucion2', 'institucion3', 'pais', 'orcid', 'titulo', 'area', 'tipo', 'resumen', 'comentarios'].forEach(function (k) { d[k] = f[k].value.trim(); });
       d.coautores = coautores();
       return fetch(CMIA_API, { method: 'POST', body: JSON.stringify(d) }).then(function (x) { return x.json(); });
     }).then(function (r) {
@@ -438,7 +440,7 @@ function vistaArticulo(res) {
   var cont = '<div class="articulo"><p class="tenue">' + enlace('n/' + n.id, numT(n)) + (a.area ? ' · ' + esc(a.area) : '') + '</p><div class="tipo">' + esc(a.tipo) + '</div>' +
     '<h1>' + esc(a.titulo) + '</h1>' + (a.tituloEn ? '<div class="en">' + esc(a.tituloEn) + '</div>' : '') +
     '<div class="autores">' + a.autores.map(function (x) { return '<div><b>' + esc((x.nombres || '') + ' ' + (x.apellidos || '')) + '</b>' + (x.orcid ? '<a class="orcid" href="https://orcid.org/' + esc(x.orcid) + '" target="_blank" rel="noopener" title="ORCID ' + esc(x.orcid) + '">iD</a>' : '') +
-      '<span>' + esc([x.afiliacion, x.ciudad, x.pais].filter(Boolean).join(', ')) + '</span></div>'; }).join('') + '</div>' +
+      [x.afiliacion, x.afiliacion2, x.afiliacion3].filter(Boolean).map(function (af) { return '<span>' + esc(af) + '</span>'; }).join('') + ([x.ciudad, x.pais].filter(Boolean).length ? '<span>' + esc([x.ciudad, x.pais].filter(Boolean).join(', ')) + '</span>' : '') + '</div>'; }).join('') + '</div>' +
     (a.correo ? '<p class="tenue">Correspondencia: <a href="mailto:' + esc(a.correo) + '">' + esc(a.correo) + '</a></p>' : '') +
     '<div class="fechas">' + fechas + '</div>' +
     '<h3 class="sub">' + (en ? 'Abstract' : 'Resumen') + '</h3><div class="texto">' + md(a.resumen) + '</div>' + (a.palabras ? '<div class="kw"><b>' + (en ? 'Keywords' : 'Palabras clave') + ':</b> ' + esc(a.palabras) + '</div>' : '') +

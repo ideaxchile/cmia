@@ -410,7 +410,7 @@ function filaAutor(x) {
   x = x || {};
   var c = function (k, ph, w) { return '<input data-au="' + k + '" value="' + esc(x[k]) + '" placeholder="' + ph + '"' + (w ? ' style="grid-column:span ' + w + '"' : '') + '>'; };
   return '<div class="au-fila" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:10px;border:1px solid var(--line);border-radius:12px;margin-bottom:8px;background:#fff">' +
-    c('nombres', 'Nombres') + c('apellidos', 'Apellidos') + c('afiliacion', 'Institución completa', 2) + c('ciudad', 'Ciudad') + c('pais', 'País') + c('orcid', 'ORCID (0000-0000-0000-0000)') + c('correo', 'Correo (obligatorio)') +
+    c('nombres', 'Nombres') + c('apellidos', 'Apellidos') + c('afiliacion', 'Afiliación 1: institución completa', 2) + c('afiliacion2', 'Afiliación 2 (opcional)', 2) + c('afiliacion3', 'Afiliación 3 (opcional)', 2) + c('ciudad', 'Ciudad') + c('pais', 'País') + c('orcid', 'ORCID (0000-0000-0000-0000)') + c('correo', 'Correo') +
     '<div style="grid-column:span 2;display:flex;gap:6px;justify-content:flex-end"><button type="button" class="btn btn-sm" data-ausub>↑</button><button type="button" class="btn btn-d btn-sm" data-auqui>Quitar</button></div></div>';
 }
 function enlazarAutores() {
@@ -497,7 +497,7 @@ function abrirEnvio(e) {
     return '<li>Ronda ' + v.ronda + ' · ' + esc(v.fecha) + ' · <a href="' + esc(v.manuscritoUrl) + '" target="_blank" rel="noopener">manuscrito</a>' + (v.respuestaUrl ? ' · <a href="' + esc(v.respuestaUrl) + '" target="_blank" rel="noopener">respuesta a los evaluadores</a>' : '') + '</li>';
   }).join('');
   var html = '<div class="row-title" style="margin-bottom:6px">' + esc(e.titulo) + '</div><p class="row-meta" style="margin:0 0 14px"><span class="et">' + esc(e.estado) + '</span><span>Ronda ' + ronda + '</span><span>Recibido ' + esc(e.fecha) + '</span></p>' +
-    f('Autor de correspondencia', e.nombre + ' · ' + e.correo) + f('Institución', e.institucion + ', ' + e.pais) + f('ORCID', e.orcid) + f('Coautores', e.coautores) +
+    f('Autor de correspondencia', e.nombre + ' · ' + e.correo) + f('Afiliaciones', [e.institucion, e.institucion2, e.institucion3].filter(Boolean).join('; ') + ', ' + e.pais) + f('ORCID', e.orcid) + f('Coautores', e.coautores) +
     f('Área y tipo', e.area + ' · ' + e.tipo) + f('Resumen', e.resumen) + f('Comentarios del autor', e.comentarios) +
     '<div class="hint">Archivos</div><ul style="margin:4px 0 10px;padding-left:18px">' + vers + '<li><a href="' + esc(e.cartaUrl) + '" target="_blank" rel="noopener">Carta de presentación</a></li></ul>' +
     '<p><a href="mailto:' + esc(e.correo) + '?subject=' + encodeURIComponent(e.codigo + ': ' + e.titulo) + '">Escribir al autor</a></p>' +
@@ -575,9 +575,8 @@ function guardarRevista(d) {
     if (!d.autores.length) { toast('Agrega al menos un autor con su nombre.', true); return; }
     var malo = d.autores.filter(function (o) { return o.orcid && !/^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$/.test(o.orcid.replace(/^https?:\/\/orcid\.org\//, '')); })[0];
     if (malo) { toast('El ORCID de ' + (malo.nombres || malo.apellidos) + ' no tiene el formato 0000-0000-0000-0000.', true); return; }
-    var sinMail = d.autores.filter(function (o) { return !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(o.correo || ''); })[0];
-    if (sinMail) { toast('Falta el correo de ' + ((sinMail.nombres || '') + ' ' + (sinMail.apellidos || '')).trim() + '. Todos los autores reciben su certificado de publicación.', true); return; }
-    d.exigirCorreos = true;
+    var sinMail = d.autores.filter(function (o) { return !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(o.correo || ''); }).map(function (o) { return ((o.nombres || '') + ' ' + (o.apellidos || '')).trim(); });
+    if (sinMail.length && !confirm('Falta el correo de: ' + sinMail.join(', ') + '.\n\nEl certificado de publicación les llegará solo a los autores con correo, con la petición de compartirlo con sus coautores. Puedes agregar los correos después y reenviarlo.\n\n¿Guardar igual?')) return;
   }
   if (A.portada) d.portadaNueva = A.portada; if (A.quitar_portada) d.quitarPortada = true;
   if (A.pdf) d.pdfNuevo = A.pdf; if (A.quitar_pdf) d.quitarPdf = true;
