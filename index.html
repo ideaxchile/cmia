@@ -149,7 +149,7 @@
   </svg>
   <div>
     <h1><a href="#">Cuaderno Multidisciplinar de Investigación Aplicada</a></h1>
-    <div class="datos" id="datos"><span>CMIA</span><span>Semestral</span><span>Acceso abierto</span></div>
+    <div class="datos" id="datos"><span>CMIA</span><span>Anual</span><span>Acceso abierto</span></div>
   </div>
 </div></header>
 
@@ -345,7 +345,7 @@ function mostrar() {
 function aplicar(d) {
   R = d;
   var r = d.revista;
-  $('#datos').innerHTML = '<span>CMIA</span><span>' + (r.issn ? 'ISSN ' + esc(r.issn) + ' (en línea)' : 'ISSN en trámite') + '</span><span>' + esc(String(r.periodicidad || 'Semestral').split(':')[0]) + '</span><span>Acceso abierto</span>';
+  $('#datos').innerHTML = '<span>CMIA</span><span>' + (r.issn ? 'ISSN ' + esc(r.issn) + ' (en línea)' : 'ISSN en trámite') + '</span><span>' + esc(String(r.periodicidad || 'Anual').split(':')[0]) + '</span><span>Acceso abierto</span>';
   $('#pieCorreo').innerHTML = '<a href="mailto:' + esc(r.correo) + '">' + esc(r.correo) + '</a>';
   $('#pieIssn').textContent = r.issn ? 'ISSN ' + r.issn + ' (en línea)' : '';
   mostrar();
