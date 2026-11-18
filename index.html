@@ -302,10 +302,10 @@ function pagina(ruta) {
     pintar(formularioEnvio(r), act, titulo); prepararEnvio(); return;
   } else if (ruta === 'contacto') {
     titulo = 'Contacto';
-    var dir = R.equipo.filter(function (e) { return e.rol === 'Director'; })[0];
+    var dir = R.equipo.filter(function (e) { return /director/i.test(e.rol); })[0];
     cont = '<p class="rotulo">La revista</p><h2>Contacto</h2><div class="equipo"><div><b>Correo de la revista</b><span><a href="mailto:' + esc(r.correo) + '">' + esc(r.correo) + '</a></span></div>' +
       '<div><b>Entidad editora</b><span>' + esc(r.entidad) + ', Instituto de Administración y Dirección Ejecutiva</span></div>' + (r.direccion ? '<div><b>Dirección</b><span>' + esc(r.direccion) + '</span></div>' : '') +
-      '<div><b>Ciudad</b><span>' + esc(r.ciudad) + '</span></div>' + (dir ? '<div><b>Director</b><span>' + esc(dir.nombre) + '</span></div>' : '') + '</div>';
+      '<div><b>Ciudad</b><span>' + esc(r.ciudad) + '</span></div>' + (dir ? '<div><b>' + esc(dir.rol) + '</b><span>' + esc(dir.nombre) + '</span></div>' : '') + '</div>';
   } else if (ruta.indexOf('p/') === 0) {
     var pg = R.paginas.filter(function (x) { return x.clave === ruta.slice(2); })[0];
     act = ruta === 'p/instrucciones' || ruta === 'p/enfoque' ? ruta : 'politicas';

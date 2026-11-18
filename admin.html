@@ -284,9 +284,11 @@ function pintarRevista() {
         return '<div class="row"><div class="row-main"><div class="row-title">' + esc(a.titulo) + '</div><div class="row-meta">' +
           '<span class="et">' + esc(a.area || 'Sin área') + '</span><span>' + esc(a.tipo) + '</span><span>' + rvNumTxt(n) + (a.paginas ? ' · pp. ' + esc(a.paginas) : '') + '</span>' +
           (a.estado === 'borrador' ? '<span class="et">Borrador</span>' : n && n.estado === 'publicado' ? '<span class="et ok">Publicado</span>' : '<span class="et alerta">Listo, sale con el número</span>') +
-          (a.doi ? '' : '<span class="et alerta">Sin DOI</span>') + (a.pdfUrl ? '' : '<span class="et alerta">Sin PDF</span>') +
+          (a.pdfUrl ? '' : '<span class="et alerta">Sin PDF</span>') +
+          ((a.autoresLista || []).some(function (x) { return !x.correo; }) ? '<span class="et alerta">Faltan correos de autores</span>' : '') +
+          (a.certificado ? '<span>Certificado ' + esc(String(a.certificado).split(' ')[0]) + '</span>' : '') +
           '</div><div class="hint" style="margin-top:4px">' + esc(rvAutores(a.autoresLista)) + (Number(a.lecturas) ? ' · ' + a.lecturas + ' lecturas, ' + (a.descargas || 0) + ' descargas' : '') + '</div></div>' +
-          '<div class="row-actions"><button class="btn btn-sm" data-rvaed="' + a.id + '">Editar</button><button class="btn btn-d btn-sm" data-rvadel="' + a.id + '">Eliminar</button></div></div>';
+          '<div class="row-actions">' + (n && n.estado === 'publicado' && a.estado !== 'borrador' ? '<button class="btn btn-sm" data-rvcert="' + a.id + '">' + (a.certificado ? 'Reenviar certificado' : 'Enviar certificado') + '</button>' : '') + '<button class="btn btn-sm" data-rvaed="' + a.id + '">Editar</button><button class="btn btn-d btn-sm" data-rvadel="' + a.id + '">Eliminar</button></div></div>';
       }).join('') + '</div>' : '<div class="empty">' + (R.numeros.length ? 'No hay artículos aquí. Usa «Nuevo artículo».' : 'Primero crea un número en la pestaña Números.') + '</div>');
   } else if (s === 'envios') {
     var E = R.envios || [];
@@ -344,6 +346,11 @@ function pintarRevista() {
   on('[data-rved]', function (b) { abrirNumero(rvNum(b.getAttribute('data-rved'))); });
   if ($('#rvNuevoEv')) $('#rvNuevoEv').onclick = function () { abrirEvaluador(); };
   on('[data-rvev]', function (b) { abrirEvaluador((R.evaluadores || []).filter(function (x) { return x.id === b.getAttribute('data-rvev'); })[0]); });
+  on('[data-rvcert]', function (b) {
+    if (!confirm('¿Enviar el certificado de publicación a todos los autores de este artículo?')) return;
+    b.disabled = true;
+    run('adminRevistaCertificado', b.getAttribute('data-rvcert')).then(function (r) { toast(r._aviso || 'Certificado enviado a los autores.', !!r._aviso); vRevista(); }).catch(function (e) { toast(e.message, true); b.disabled = false; });
+  });
   on('[data-rvenv]', function (b) { abrirEnvio((R.envios || []).filter(function (e) { return e.codigo === b.getAttribute('data-rvenv'); })[0]); });
   on('[data-rvart]', function (b) { RV.sub = 'articulos'; RV.filtroNum = b.getAttribute('data-rvart'); pintarRevista(); });
   on('[data-rvdel]', function (b) { if (!confirm('¿Eliminar este número? Solo se puede si no tiene artículos y no está publicado.')) return; run('adminRevistaEliminarNumero', b.getAttribute('data-rvdel')).then(function () { toast('Número eliminado.'); vRevista(); }).catch(function (e) { toast(e.message, true); }); });
@@ -403,7 +410,7 @@ function filaAutor(x) {
   x = x || {};
   var c = function (k, ph, w) { return '<input data-au="' + k + '" value="' + esc(x[k]) + '" placeholder="' + ph + '"' + (w ? ' style="grid-column:span ' + w + '"' : '') + '>'; };
   return '<div class="au-fila" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:10px;border:1px solid var(--line);border-radius:12px;margin-bottom:8px;background:#fff">' +
-    c('nombres', 'Nombres') + c('apellidos', 'Apellidos') + c('afiliacion', 'Institución completa', 2) + c('ciudad', 'Ciudad') + c('pais', 'País') + c('orcid', 'ORCID (0000-0000-0000-0000)') + c('correo', 'Correo') +
+    c('nombres', 'Nombres') + c('apellidos', 'Apellidos') + c('afiliacion', 'Institución completa', 2) + c('ciudad', 'Ciudad') + c('pais', 'País') + c('orcid', 'ORCID (0000-0000-0000-0000)') + c('correo', 'Correo (obligatorio)') +
     '<div style="grid-column:span 2;display:flex;gap:6px;justify-content:flex-end"><button type="button" class="btn btn-sm" data-ausub>↑</button><button type="button" class="btn btn-d btn-sm" data-auqui>Quitar</button></div></div>';
 }
 function enlazarAutores() {
@@ -568,6 +575,9 @@ function guardarRevista(d) {
     if (!d.autores.length) { toast('Agrega al menos un autor con su nombre.', true); return; }
     var malo = d.autores.filter(function (o) { return o.orcid && !/^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$/.test(o.orcid.replace(/^https?:\/\/orcid\.org\//, '')); })[0];
     if (malo) { toast('El ORCID de ' + (malo.nombres || malo.apellidos) + ' no tiene el formato 0000-0000-0000-0000.', true); return; }
+    var sinMail = d.autores.filter(function (o) { return !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(o.correo || ''); })[0];
+    if (sinMail) { toast('Falta el correo de ' + ((sinMail.nombres || '') + ' ' + (sinMail.apellidos || '')).trim() + '. Todos los autores reciben su certificado de publicación.', true); return; }
+    d.exigirCorreos = true;
   }
   if (A.portada) d.portadaNueva = A.portada; if (A.quitar_portada) d.quitarPortada = true;
   if (A.pdf) d.pdfNuevo = A.pdf; if (A.quitar_pdf) d.quitarPdf = true;
